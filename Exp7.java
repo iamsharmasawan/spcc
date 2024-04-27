@@ -1,75 +1,75 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class Exp7 {
 
-    public static int prec(char c) {
-        if (c == '/' || c == '*') {
-            return 2;
-        } else if (c == '+' || c == '-') {
-            return 1;
-        } else {
-            return -1;
-        }
+    // Sabse pehle ek Set of Operator banane hai
+    // Aur Map of precedence
+    static Set<Character> operators = new HashSet<>(Arrays.asList('+', '-', '*', '/', '(', ')'));
+    static Map<Character, Integer> precedence = new HashMap<>();
+
+    static {
+        // CValues daalni hai
+
+        precedence.put('+', 1);
+        precedence.put('-', 1);
+        precedence.put('*', 2);
+        precedence.put('/', 2);
     }
 
-    public static List<String> infixToPostfix(String s) {
-        List<String> result = new ArrayList<>();
-        Stack<Character> stack = new Stack<>();
+    public static String generateTAC(String postfix) {
+        Stack<String> Stack = new Stack<>();
+        int t = 1;
 
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-
-            if (Character.isLetter(c)) {
-                result.add(String.valueOf(c));
+        for (char c : postfix.toCharArray()) {
+            if (!operators.contains(c)) {
+                Stack.push(Character.toString(c));
             } else {
-                while (!stack.isEmpty() && prec(s.charAt(i)) <= prec(stack.peek())) {
-                    result.add(String.valueOf(stack.pop()));
-                }
-                stack.push(c);
+                String operand2 = Stack.pop();
+                String operand1 = Stack.pop();
+                System.out.println("t" + t + " := " + operand1 + " " + c + " " + operand2);
+                Stack.push("t" + t);
+                t++;
             }
         }
 
-        while (!stack.isEmpty()) {
-            result.add(String.valueOf(stack.pop()));
-        }
+        return Stack.pop();
+    }
 
-        return result;
+    public static String infixToPostfix(String formula) {
+        Stack<Character> stack = new Stack<>();
+        StringBuilder output = new StringBuilder();
+
+        for (char ch : formula.toCharArray()) {
+            if (!operators.contains(ch)) {
+                output.append(ch);
+            } else if (ch == '(') {
+                stack.push('(');
+            } else if (ch == ')') {
+                while (!stack.isEmpty() && stack.peek() != '(') {
+                    output.append(stack.pop());
+                }
+                stack.pop();
+            } else {
+                while (!stack.isEmpty() && stack.peek() != '(' && precedence.get(ch) <= precedence.get(stack.peek())) {
+                    output.append(stack.pop());
+                }
+                stack.push(ch);
+            }
+        }
+        while (!stack.isEmpty()) {
+            output.append(stack.pop());
+        }
+        return output.toString();
     }
 
     public static void main(String[] args) {
-        // Input expression
-        String inputexp = "ans=a*b/c-d";
-        String exp = "";
-        String resvar = "";
-        for (int i = 0; i < inputexp.length(); i++) {
-            if (inputexp.charAt(i) == '=') {
-                resvar = inputexp.substring(0, i);
-                exp = inputexp.substring(i + 1);
-            }
-        }
-        System.out.println(exp);
-        System.out.println(resvar);
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter expression: ");
+        String expression = sc.nextLine();
 
-        // Function call
-        List<String> expression = infixToPostfix(exp);
-        System.out.println(expression);
+        String postfix = infixToPostfix(expression);
+        generateTAC(postfix);
 
-        Stack<String> st = new Stack<>();
-        int ind = 1;
-        for (String i : expression) {
-            if (Character.isLetter(i.charAt(0))) {
-                st.push(i);
-            } else {
-                String temp1 = st.pop();
-                String temp2 = st.pop();
-                System.out.println("t" + ind + " = " + temp2 + " " + i + " " + temp1);
-                st.push("t" + ind);
-                ind++;
-            }
-        }
-
-        System.out.println(resvar + " = t" + (ind - 1));
+        sc.close();
     }
 }
